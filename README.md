@@ -1,21 +1,18 @@
-# Streamlit Template
+# Stock Exchange Data
 
-
-## Clone this repo
-Clone this repo to your local machine, and replace all the 'cliffweng' with your name, and 'streamlit-template' with your repo name.
 
 ## Development with Docker
 Run the following commands to build the dev docker image and run the container that use local files throughout development process:
 ```
-docker build -t cliffweng/streamlit-template .
-docker run -p 8501:8501 -v %cd%:/home/streamlit cliffweng/streamlit-template
+docker build -t cliffweng/streamlit_charts .
+docker run -p 8501:8501 -v %cd%:/home/streamlit cliffweng/streamlit_charts
 ```
 
 ## Package with Docker
 Run the following command to build the production docker image and test run it:
 ```
-docker build -t cliffweng/streamlit-template .
-docker run -p 8501:8501 cliffweng/streamlit-template:latest  # can be launched anywhere, no need to mount local files
+docker build -t cliffweng/streamlit_charts .
+docker run -p 8501:8501 cliffweng/streamlit_charts  # can be launched anywhere, no need to mount local files
 ```
 Then visit [localhost:8501](http://localhost:8501/)
 
