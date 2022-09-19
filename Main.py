@@ -1,50 +1,57 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 import yfinance as yf
+import pandas as pd
+import datetime
 
-st.set_page_config(page_title="JPM Prices", layout="wide")
+st.set_page_config(page_title="Stock Price w/ Different Chart Packages", layout="wide")
 
 @st.cache
-def getData():
-    df = yf.download('JPM', start='2019-01-01',end='2019-12-31', progress=False)
+def getTickers():
+    table = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies")[0]
+    return list(table['Symbol'])
+
+@st.cache
+def retrieveTicker(ticker,startdate):
+    df = yf.download(ticker, start=startdate, progress=False)
     return df
 
-st.title('Stock Price w/ Different Chart Packages')
+cols = getTickers()
+startdate = st.sidebar.date_input("Start Date", datetime.date(2022, 1, 1)) # '2022-01-01'
+ticker = st.sidebar.selectbox('Select a Stock', cols, index=cols.index("JPM"))
 
-df = getData()
+df = retrieveTicker(ticker,startdate)
 # st.table(Chase[:10])
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["matplotlib", "plotly", "altair", "vega-lite", "bokeh"])
 
 # matplotlib
 with tab1:
-    st.markdown('[matplotlib](https://matplotlib.org/stable/gallery/index.html)')
+    st.markdown('Go to [matplotlib](https://matplotlib.org/stable/gallery/index.html) for more examples.')
     figm, ax = plt.subplots()
-    ax.title.set_text('Chase')
+    ax.title.set_text(ticker)
     ax.plot(df['Close'])
     st.pyplot(figm) 
 
 # plotly
 with tab2:
-    st.markdown('[plotly](https://plotly.com/python/)')
+    st.markdown('Go to [plotly](https://plotly.com/python/) for more examples.')
     import plotly.graph_objects as go
-    jpm = df.reset_index()
-    figp = go.Figure(data=[go.Candlestick(x=jpm['Date'],
-            open=jpm['Open'],high=jpm['High'],low=jpm['Low'],close=jpm['Close'])])
+    stock = df.reset_index()
+    figp = go.Figure(data=[go.Candlestick(x=stock['Date'],open=stock['Open'],high=stock['High'],low=stock['Low'],close=stock['Close'])])
     st.plotly_chart(figp, use_container_width=True) 
 
 # altair
 with tab3:
-    st.markdown('[Altair](https://altair-viz.github.io/gallery/index.html)')
+    st.markdown('Go to [Altair](https://altair-viz.github.io/gallery/index.html) for more examples.')
     import altair as alt
-    figa = alt.Chart(jpm).mark_area(color="lightblue",
-        interpolate='step-after', line=True).encode(x='Date',y='Open')
+    figa = alt.Chart(stock).mark_area(color="lightblue",interpolate='step-after', line=True).encode(x='Date',y='Open')
     st.altair_chart(figa, use_container_width=True)
 
 # vega-lite
 with tab4:
-    st.markdown('[vega-lite](https://vega.github.io/vega-lite/examples/)')
-    st.vega_lite_chart(jpm, {
+    st.markdown('Go to [vega-lite](https://vega.github.io/vega-lite/examples/) for more examples.')
+    st.vega_lite_chart(stock, {
         'mark': {'type': 'line', 'tooltip': True},
         'encoding': {
             'x': {'field': 'Date', 'type': 'temporal'},
@@ -52,12 +59,12 @@ with tab4:
         }},use_container_width=True)
 
 with tab5:
-    st.markdown('[bokeh](https://docs.bokeh.org/en/latest/docs/gallery.html)')
+    st.markdown('Go to [bokeh](https://docs.bokeh.org/en/latest/docs/gallery.html) for more examples.')
 
     from math import pi
     from bokeh.plotting import figure, show
 
-    df = jpm[:30] # shorten for example
+    df = stock[:30] # shorten for example
     # df["date"] = pd.to_datetime(df["date"])
 
     inc = df.Close > df.Open
@@ -66,7 +73,7 @@ with tab5:
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
 
-    p = figure(x_axis_type="datetime", tools=TOOLS, width=1000, title = "JPM Candlestick")
+    p = figure(x_axis_type="datetime", tools=TOOLS, width=1000, title = ticker+" Candlestick")
     p.xaxis.major_label_orientation = pi/4
     p.grid.grid_line_alpha=0.3
 
